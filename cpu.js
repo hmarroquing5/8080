@@ -1,7 +1,12 @@
 class Intel8080 {
-    constructor() {
+    constructor(coprocessor = null) {
         this.memory = new Uint8Array(65536);
+        this.coprocessor = coprocessor;
         this.reset();
+    }
+
+    setCoprocessor(coprocessor) {
+        this.coprocessor = coprocessor;
     }
 
     reset() {
@@ -266,8 +271,23 @@ class Intel8080 {
             case 0x3F: this.flags.cy = !this.flags.cy; break; // CMC
 
             // Special
-            case 0xDB: this.fetch(); break; // IN (Ignored for now)
-            case 0xD3: this.fetch(); break; // OUT (Ignored for now)
+            case 0xDB: { // IN (
+                const port = this.fetch();
+                if (this.coprocessor) {
+                    this.registers.a = this.coprocessor.handleIn(port);
+                } else {
+                this.registers.a = 0x00;
+                }
+                break;
+            }
+    
+            case 0xD3: { // OUT 
+                const port = this.fetch();
+                if (this.coprocessor) {
+                    this.coprocessor.handleOut(port, this.registers.a);
+                }
+                break;
+            }
             case 0xFB: break; // EI
             case 0xF3: break; // DI
         }

@@ -1,4 +1,7 @@
-const cpu = new Intel8080();
+const coprocessor = new MathCoprocessor16(null);
+const cpu = new Intel8080(coprocessor);
+coprocessor.cpu = cpu;
+
 const assembler = new Assembler8080();
 
 let runInterval = null;
@@ -17,15 +20,60 @@ function updateUI() {
     document.getElementById('reg-sp').textContent = cpu.registers.sp.toString(16).toUpperCase().padStart(4, '0');
     document.getElementById('reg-f').textContent = cpu.getFlagByte().toString(16).toUpperCase().padStart(2, '0');
 
-    // Flags
-    document.getElementById('flag-s').textContent = cpu.flags.s ? '1' : '0';
-    document.getElementById('flag-z').textContent = cpu.flags.z ? '1' : '0';
-    document.getElementById('flag-ac').textContent = cpu.flags.ac ? '1' : '0';
-    document.getElementById('flag-p').textContent = cpu.flags.p ? '1' : '0';
-    document.getElementById('flag-cy').textContent = cpu.flags.cy ? '1' : '0';
+    // Flags CPU (Validación defensiva)
+    if (document.getElementById('flag-s')) {
+        document.getElementById('flag-s').textContent = cpu.flags.s ? '1' : '0';
+        document.getElementById('flag-z').textContent = cpu.flags.z ? '1' : '0';
+        document.getElementById('flag-ac').textContent = cpu.flags.ac ? '1' : '0';
+        document.getElementById('flag-p').textContent = cpu.flags.p ? '1' : '0';
+        document.getElementById('flag-cy').textContent = cpu.flags.cy ? '1' : '0';
+    }
 
     document.getElementById('status-badge').textContent = cpu.halted ? 'Halted' : (runInterval ? 'Running' : 'Idle');
     document.getElementById('status-badge').style.backgroundColor = cpu.halted ? '#fee2e2' : (runInterval ? '#f0fdf4' : '#e2e8f0');
+
+    // Co-Procesador Matemático (FPU)
+    if (document.getElementById('fpr0')) {
+        // Si el número tiene decimales se formatean a 2 dígitos; si es entero, se muestra tal cual.
+        const formatFPR = (val) => Number.isInteger(val) ? val.toString() : val.toFixed(2);
+
+        document.getElementById('fpr0').textContent = formatFPR(coprocessor.registers.fpr0);
+        document.getElementById('fpr1').textContent = formatFPR(coprocessor.registers.fpr1);
+        document.getElementById('fpr2').textContent = formatFPR(coprocessor.registers.fpr2);
+        document.getElementById('fpr3').textContent = formatFPR(coprocessor.registers.fpr3);
+
+        document.getElementById('fpu-busy').textContent = coprocessor.status.busy ? '1' : '0';
+        document.getElementById('fpu-zero').textContent = coprocessor.status.zero ? '1' : '0';
+        document.getElementById('fpu-err').textContent = coprocessor.status.invalid ? '1' : '0';
+    }
+
+// Actualización del Bus en la Interfaz
+if (document.getElementById('bus-addr-val')) {
+    const addrElem = document.getElementById('address-bus');
+    const dataElem = document.getElementById('data-bus');
+    const ctrlElem = document.getElementById('control-bus');
+
+    document.getElementById('bus-addr-val').textContent = coprocessor.bus.addressBus.toString(16).toUpperCase().padStart(4, '0') + 'H';
+    document.getElementById('bus-data-val').textContent = coprocessor.bus.dataBus.toString(16).toUpperCase().padStart(2, '0') + 'H';
+    document.getElementById('bus-ctrl-val').textContent = `${coprocessor.bus.controlSignal} (${coprocessor.bus.activeSource} ➔ ${coprocessor.bus.activeTarget})`;
+
+    // Limpiar clases previas
+    addrElem.className = 'bus-line';
+    dataElem.className = 'bus-line';
+    ctrlElem.className = 'bus-line';
+
+    // Iluminar según el tipo de señal
+    if (coprocessor.bus.controlSignal === 'WRITE') {
+        dataElem.classList.add('bus-active-write');
+        ctrlElem.classList.add('bus-active-write');
+    } else if (coprocessor.bus.controlSignal === 'READ') {
+        dataElem.classList.add('bus-active-read');
+        ctrlElem.classList.add('bus-active-read');
+    } else if (coprocessor.bus.controlSignal.startsWith('IO_')) {
+        dataElem.classList.add('bus-active-io');
+        ctrlElem.classList.add('bus-active-io');
+    }
+}
 
     renderMemory();
     renderStack();
@@ -68,6 +116,7 @@ function renderStack() {
 
 function renderMemory() {
     const table = document.getElementById('memory-table');
+    if (!table) return;
     table.innerHTML = '';
 
     // Header
@@ -163,6 +212,7 @@ document.getElementById('btn-reset').addEventListener('click', () => {
         runInterval = null;
     }
     cpu.reset();
+    coprocessor.reset(); // Reinicio de co procesador
 
     // Clear assembler output
     const output = document.getElementById('assembler-output');

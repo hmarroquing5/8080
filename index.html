@@ -6,97 +6,204 @@
     <title>Intel 8080 Emulator & Assembler</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <header>
+<body class="pcb-theme">
+    <header class="pcb-header">
         <div class="header-container">
-            <h1>Intel 8080 Emulator & Assembler</h1>
-            <span class="version-badge">Version 2.1</span>
+            <h1>
+                Intel 8080 Emulator & Assembler<br>
+                con co-procesador de punto flotante
+            </h1>
+            <span class="version-badge">Version HM1</span>
         </div>
     </header>
 
-    <main>
-        <section id="editor-section">
-            <h2>Assembler</h2>
-            <textarea id="code-editor" spellcheck="false" placeholder="Write your 8080 assembly here...
-Example:
-MVI A, 5
-MVI B, 10
-ADD B
-STA 2000H
-HLT"></textarea>
-            <div class="controls">
-                <button id="btn-assemble">Assemble & Load</button>
-                <button id="btn-clear-code" class="btn-clear">Clear Code</button>
+<main class="pcb-wrapper">
+    <div class="pcb-board">
+        <section class="pcb-left">
+            <div class="board-top-bar">
+                <div class="controls">
+                    <button id="btn-run" class="btn-tactile btn-green">
+                        RUN
+                    </button>
+                    <button id="btn-stop" class="btn-tactile btn-red">
+                        STOP
+                    </button>
+                    <button id="btn-step" class="btn-tactile btn-yellow">
+                        STEP
+                    </button>
+                    <button id="btn-reset" class="btn-tactile btn-blue">
+                        RESET
+                    </button>
+                </div>
+                <div class="status-container">
+                    <span class="led-label">
+                        ESTADO PLACA:
+                    </span>
+                    <span id="status-badge">
+                        Idle
+                    </span>
+                </div>
             </div>
-            <div id="assembler-output"></div>
-        </section>
 
-        <section id="emulator-section">
-            <h2>CPU Dashboard</h2>
-            <div class="controls">
-                <button id="btn-run">Run</button>
-                <button id="btn-stop">Stop</button>
-                <button id="btn-step">Step</button>
-                <button id="btn-reset">Reset</button>
-                <span id="status-badge">Idle</span>
-            </div>
-
-            <div class="cpu-grid">
-                <div class="card registers">
-                    <h3>Registers</h3>
-                    <div class="reg-row">
-                        <div class="reg-box"><span>A</span><div id="reg-a">00</div></div>
-                        <div class="reg-box"><span>Flags</span><div id="reg-f">02</div></div>
-                    </div>
-                    <div class="reg-row">
-                        <div class="reg-box"><span>B</span><div id="reg-b">00</div></div>
-                        <div class="reg-box"><span>C</span><div id="reg-c">00</div></div>
-                    </div>
-                    <div class="reg-row">
-                        <div class="reg-box"><span>D</span><div id="reg-d">00</div></div>
-                        <div class="reg-box"><span>E</span><div id="reg-e">00</div></div>
-                    </div>
-                    <div class="reg-row">
-                        <div class="reg-box"><span>H</span><div id="reg-h">00</div></div>
-                        <div class="reg-box"><span>L</span><div id="reg-l">00</div></div>
-                    </div>
-                    <div class="reg-row">
-                        <div class="reg-box extended"><span>PC</span><div id="reg-pc">0000</div></div>
-                        <div class="reg-box extended"><span>SP</span><div id="reg-sp">FFFF</div></div>
-                    </div>
+            <div class="pcb-card-dark programmer">
+                <h2 class="silkscreen-title">
+                    PROGRAMADOR DE ROM / ENSAMBLADOR 8080
+                </h2>
+                <textarea
+                    id="code-editor"
+                    spellcheck="false"
+                    rows="10"></textarea>
+                <div class="controls programmer-buttons">
+                    <button
+                        id="btn-assemble"
+                        class="btn-pcb">
+                        Ensamblar y Cargar
+                    </button>
+                    <button
+                        id="btn-clear-code"
+                        class="btn-pcb btn-clear">
+                        Limpiar
+                    </button>
                 </div>
-
-                <div class="dashboard-right">
-                    <div class="card flags">
-                        <h3>Flags</h3>
-                        <div class="flags-row">
-                            <div class="flag-box" title="Sign Flag (Signo): Se activa (1) si el bit más significativo (bit 7) del resultado es 1, indicando un número negativo."><span>S</span><div id="flag-s">0</div></div>
-                            <div class="flag-box" title="Zero Flag (Cero): Se activa (1) si el resultado de la última operación fue exactamente cero."><span>Z</span><div id="flag-z">0</div></div>
-                            <div class="flag-box" title="Auxiliary Carry Flag (Acarreo Auxiliar): Se activa (1) si hay un acarreo del bit 3 al bit 4 en una suma, o si no hay préstamo en una resta. Es utilizado por DAA."><span>AC</span><div id="flag-ac">0</div></div>
-                            <div class="flag-box" title="Parity Flag (Paridad): Se activa (1) si el resultado tiene un número par de bits en 1."><span>P</span><div id="flag-p">0</div></div>
-                            <div class="flag-box" title="Carry Flag (Acarreo): Se activa (1) si la última operación generó un acarreo (en suma) o un préstamo (en resta) fuera del bit más significativo."><span>CY</span><div id="flag-cy">0</div></div>
-                        </div>
-                    </div>
-
-                    <div class="card stack">
-                        <h3>Stack View (around SP)</h3>
-                        <div id="stack-table"></div>
-                    </div>
-                </div>
-
-                <div class="card memory">
-                    <h3>Memory View</h3>
-                    <div class="mem-controls">
-                        <input type="text" id="mem-start-addr" value="0000" size="4">
-                        <button id="btn-mem-go">Go</button>
-                    </div>
-                    <div id="memory-table"></div>
-                </div>
+                <div id="assembler-output"></div>
             </div>
         </section>
-    </main>
+
+        <section class="pcb-right">
+            <div class="dip-chip chip-cpu">
+                <div class="chip-title">
+                    CPU INTEL i8080A (PROCESADOR BASE 8-BIT)
+                </div>
+                <div class="reg-row">
+                    <div class="reg-box">
+                        <span>A</span>
+                        <div id="reg-a">00</div>
+                    </div>
+                    <div class="reg-box">
+                        <span>B</span>
+                        <div id="reg-b">00</div>
+                    </div>
+                    <div class="reg-box">
+                        <span>C</span>
+                        <div id="reg-c">00</div>
+                    </div>
+                    <div class="reg-box">
+                        <span>D</span>
+                        <div id="reg-d">00</div>
+                    </div>
+                    <div class="reg-box">
+                        <span>E</span>
+                        <div id="reg-e">00</div>
+                    </div>
+                    <div class="reg-box">
+                        <span>H</span>
+                        <div id="reg-h">00</div>
+                    </div>
+                    <div class="reg-box">
+                        <span>L</span>
+                        <div id="reg-l">00</div>
+                    </div>
+                </div>
+
+                <div class="reg-row">
+                    <div class="reg-box extended">
+                        <span>PC</span>
+                        <div id="reg-pc">0000</div>
+                    </div>
+                    <div class="reg-box extended">
+                        <span>SP</span>
+                        <div id="reg-sp">FFFF</div>
+                    </div>
+                    <div class="reg-box extended">
+                        <span>FLAGS</span>
+                        <div id="reg-f">02</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bus-traces">
+                <div class="bus-line" id="address-bus">
+                    BUS DIRECCIONES (16-BIT):
+                    <span id="bus-addr-val">0000H</span>
+                </div>
+                <div class="bus-line" id="data-bus">
+                    BUS DE DATOS (8-BIT):
+                    <span id="bus-data-val">00H</span>
+                </div>
+                <div class="bus-line" id="control-bus">
+                    BUS DE CONTROL (I/O & MEM):
+                    <span id="bus-ctrl-val">
+                        IDLE (NONE ➔ NONE)
+                    </span>
+                </div>
+            </div>
+
+            <div class="dip-chip chip-ram memory">
+                <div class="chip-title">
+                    MEMORIA RAM COMPARTIDA (ZONA INTERCAMBIO 3000H)
+                </div>
+                <div class="mem-controls">
+                    <input
+                        type="text"
+                        id="mem-start-addr"
+                        value="3000"
+                        size="4">
+                    <button
+                        id="btn-mem-go"
+                        class="btn-pcb-small">
+                        Ir a Dirección
+                    </button>
+                </div>
+                <div id="memory-table"></div>
+            </div>
+
+            <div class="dip-chip chip-fpu">
+                <div class="chip-title">
+                    COPROCESADOR MATEMÁTICO 16-BIT (MATH FPU)
+                </div>
+                <div class="reg-row">
+                    <div class="reg-box extended">
+                        <span>FPR0 (Op 1)</span>
+                        <div id="fpr0">0</div>
+                    </div>
+                    <div class="reg-box extended">
+                        <span>FPR1 (Op 2)</span>
+                        <div id="fpr1">0</div>
+                    </div>
+                </div>
+
+                <div class="reg-row">
+                    <div class="reg-box extended">
+                        <span>FPR2 (Resultado)</span>
+                        <div id="fpr2">0</div>
+                    </div>
+                    <div class="reg-box extended">
+                        <span>FPR3 (Temp)</span>
+                        <div id="fpr3">0</div>
+                    </div>
+                </div>
+
+                <div class="flags-row">
+                    <div class="flag-box">
+                        <span>BUSY</span>
+                        <div id="fpu-busy">0</div>
+                    </div>
+                    <div class="flag-box">
+                        <span>ZERO</span>
+                        <div id="fpu-zero">0</div>
+                    </div>
+                    <div class="flag-box">
+                        <span>ERR</span>
+                        <div id="fpu-err">0</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
 
     <script src="cpu.js"></script>
+    <script src="coprocesador.js"></script>
     <script src="assembler.js"></script>
     <script src="main.js"></script>
 </body>
